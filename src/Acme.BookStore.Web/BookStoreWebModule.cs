@@ -48,12 +48,17 @@ using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.EntityFrameworkCore;
+using Acme.BookStore.EntityFrameworkCore;
+using Volo.Abp.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Acme.BookStore.Permissions;
 
 namespace Acme.BookStore.Web;
 
 [DependsOn(
-    typeof(BookStoreHttpApiClientModule),
     typeof(BookStoreHttpApiModule),
+    typeof(BookStoreApplicationModule),
+    typeof(BookStoreEntityFrameworkCoreModule),
     typeof(AbpAspNetCoreAuthenticationOpenIdConnectModule),
     typeof(AbpAspNetCoreMvcClientModule),
     typeof(AbpHttpClientWebModule),
@@ -79,7 +84,9 @@ public class BookStoreWebModule : AbpModule
         {
             options.AddAssemblyResource(
                 typeof(BookStoreResource),
+                typeof(BookStoreDomainModule).Assembly,
                 typeof(BookStoreDomainSharedModule).Assembly,
+                typeof(BookStoreApplicationModule).Assembly,
                 typeof(BookStoreApplicationContractsModule).Assembly,
                 typeof(BookStoreWebModule).Assembly
             );
@@ -101,12 +108,8 @@ public class BookStoreWebModule : AbpModule
         ConfigureVirtualFileSystem(hostingEnvironment);
         ConfigureNavigationServices(configuration);
         ConfigureMultiTenancy();
+        ConfigureAutoApiControllers();
         ConfigureSwaggerServices(context.Services);
-
-        Configure<AbpDbContextOptions>(options =>
-        {
-            options.UseSqlServer();
-        });
     }
 
     private void ConfigureBundles()
@@ -194,10 +197,20 @@ public class BookStoreWebModule : AbpModule
             Configure<AbpVirtualFileSystemOptions>(options =>
             {
                 options.FileSets.ReplaceEmbeddedByPhysical<BookStoreDomainSharedModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}Acme.BookStore.Domain.Shared"));
+                options.FileSets.ReplaceEmbeddedByPhysical<BookStoreDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}Acme.BookStore.Domain"));
                 options.FileSets.ReplaceEmbeddedByPhysical<BookStoreApplicationContractsModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}Acme.BookStore.Application.Contracts"));
+                options.FileSets.ReplaceEmbeddedByPhysical<BookStoreApplicationModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}Acme.BookStore.Application"));
                 options.FileSets.ReplaceEmbeddedByPhysical<BookStoreWebModule>(hostingEnvironment.ContentRootPath);
             });
         }
+    }
+
+    private void ConfigureAutoApiControllers()
+    {
+        Configure<AbpAspNetCoreMvcOptions>(options =>
+        {
+            options.ConventionalControllers.Create(typeof(BookStoreApplicationModule).Assembly);
+        });
     }
 
     private void ConfigureNavigationServices(IConfiguration configuration)
@@ -215,6 +228,7 @@ public class BookStoreWebModule : AbpModule
 
     private void ConfigureSwaggerServices(IServiceCollection services)
     {
+        
         services.AddAbpSwaggerGen(
             options =>
             {
@@ -276,6 +290,7 @@ public class BookStoreWebModule : AbpModule
             app.UseMultiTenancy();
         }
 
+        app.UseUnitOfWork();
         app.UseAuthorization();
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
