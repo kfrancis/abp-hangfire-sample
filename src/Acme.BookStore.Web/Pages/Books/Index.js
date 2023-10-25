@@ -11,6 +11,10 @@ $(function () {
             ajax: abp.libs.datatables.createAjax(acme.bookStore.books.book.getList),
             columnDefs: [
                 {
+                    title: l('Id'),
+                    data: "id"
+                },
+                {
                     title: l('Name'),
                     data: "name"
                 },
@@ -49,4 +53,9 @@ $(function () {
             ]
         })
     );
+
+    $('#BooksTable tbody').on('click', 'tr', function () {
+        var data = dataTable.row(this).data();
+        $('#ReportContent').val(data.id);
+    });
 });

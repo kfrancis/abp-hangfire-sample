@@ -1,4 +1,4 @@
-﻿@page
+@page
 @using Acme.BookStore.Localization
 @using Acme.BookStore.Web.Pages.Books
 @using Microsoft.Extensions.Localization
@@ -14,5 +14,25 @@
     </abp-card-header>
     <abp-card-body>
         <abp-table striped-rows="true" id="BooksTable"></abp-table>
+    </abp-card-body>
+</abp-card>
+<abp-card>
+    <abp-card-header>
+        Add NEW BACKGROUND JOB
+    </abp-card-header>
+    <abp-card-body>
+        <abp-card-title>
+            Click on a row to fill the bookId, then run
+        </abp-card-title>
+        <form id="NewItemForm" method="post" class="row row-cols-lg-auto g-3 align-items-center">
+            <div class="col-12">
+                <div class="input-group">
+                    <input id="ReportContent" required name="ReportContent" type="text" class="form-control" placeholder="enter text...">
+                </div>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">@L["Run"].Value</button>
+            </div>
+        </form>
     </abp-card-body>
 </abp-card>

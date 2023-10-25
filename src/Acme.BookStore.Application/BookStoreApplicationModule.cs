@@ -1,6 +1,8 @@
-﻿using Volo.Abp.Account;
+using Acme.BookStore.Reports;
+using Volo.Abp.Account;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.Emailing;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
@@ -28,6 +30,11 @@ public class BookStoreApplicationModule : AbpModule
         Configure<AbpAutoMapperOptions>(options =>
         {
             options.AddMaps<BookStoreApplicationModule>();
+        });
+
+        Configure<AbpBackgroundJobOptions>(options =>
+        {
+            options.AddJob<MyReportJob>();
         });
     }
 }
