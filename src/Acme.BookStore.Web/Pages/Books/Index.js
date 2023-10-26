@@ -1,3 +1,4 @@
+var _jobNotificationTimer = null;
 $(function () {
     var l = abp.localization.getResource('BookStore');
 
@@ -57,5 +58,38 @@ $(function () {
     $('#BooksTable tbody').on('click', 'tr', function () {
         var data = dataTable.row(this).data();
         $('#ReportContent').val(data.id);
+    });
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("/my-messaging/background-jobs").build();
+
+    connection.on('backgroundJobMessage', function (eventData) { // Register for incoming messages
+        var eventDataSplit = eventData.split(";");
+        var userId = eventDataSplit[0];
+        var tenantId = eventDataSplit[1];
+
+        // don't notify yourself
+        var eventName = eventDataSplit[2].toUpperCase();
+        var eventItem = JSON.parse(eventDataSplit[3]);
+
+        switch (eventName) {
+
+            case "App.ReportComplete".toUpperCase():
+
+                if (_jobNotificationTimer != null) {
+                    clearTimeout(_jobNotificationTimer);
+                    _jobNotificationTimer = null;
+                }
+                _jobNotificationTimer = setTimeout(function () {
+                    abp.notify.info(l("ReportCompleted", eventItem.Message));
+                }, 1000);
+                break;
+        }
+
+    });
+
+    connection.start().then(function () {
+        abp.log.debug('Connected to background events server!');
+    }).catch(function (err) {
+        return console.error(err.toString());
     });
 });

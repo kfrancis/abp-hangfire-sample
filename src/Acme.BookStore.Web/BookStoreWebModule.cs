@@ -52,6 +52,8 @@ using Acme.BookStore.EntityFrameworkCore;
 using Volo.Abp.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Acme.BookStore.Permissions;
+using Volo.Abp.AspNetCore.SignalR;
+using Acme.BookStore.Web.Hubs;
 
 namespace Acme.BookStore.Web;
 
@@ -74,6 +76,7 @@ namespace Acme.BookStore.Web;
     typeof(AbpIdentityWebModule),
     typeof(AbpTenantManagementWebModule),
     typeof(AbpAspNetCoreSerilogModule),
+    typeof(AbpAspNetCoreSignalRModule),
     typeof(AbpSwashbuckleModule)
     )]
 public class BookStoreWebModule : AbpModule
@@ -110,6 +113,25 @@ public class BookStoreWebModule : AbpModule
         ConfigureMultiTenancy();
         ConfigureAutoApiControllers();
         ConfigureSwaggerServices(context.Services);
+        ConfigureSignalR();
+    }
+
+    private void ConfigureSignalR()
+    {
+        Configure<AbpSignalROptions>(options =>
+        {
+            options.Hubs.Add(
+                new HubConfig(
+                    typeof(BackgroundJobEventHub), //Hub type
+                    "/my-messaging/background-jobs", //Hub route (URL)
+                    hubOptions =>
+                    {
+                        //Additional options
+                        hubOptions.LongPolling.PollTimeout = TimeSpan.FromSeconds(30);
+                    }
+                )
+            );
+        });
     }
 
     private void ConfigureBundles()

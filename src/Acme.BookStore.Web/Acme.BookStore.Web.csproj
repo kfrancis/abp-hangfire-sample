@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite" Version="2.4.*-*" />
+    <PackageReference Include="Volo.Abp.AspNetCore.SignalR" Version="7.4.0" />
   </ItemGroup>
 
   <ItemGroup>

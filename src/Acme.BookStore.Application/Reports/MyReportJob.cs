@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.Threading;
 
@@ -23,14 +24,17 @@ namespace Acme.BookStore.Reports
     {
         private readonly IRepository<Book, Guid> _repository;
         private readonly ICancellationTokenProvider _cancellationTokenProvider;
+        private readonly ILocalEventBus _localEventBus;
 
         public MyReportJob(IRepository<Book, Guid> repository,
             ICancellationTokenProvider cancellationTokenProvider,
-            ICurrentTenant currentTenant)
+            ICurrentTenant currentTenant,
+            ILocalEventBus localEventBus)
         {
             _repository = repository;
             _cancellationTokenProvider = cancellationTokenProvider;
             CurrentTenant = currentTenant;
+            _localEventBus = localEventBus;
         }
 
         public ICurrentTenant CurrentTenant { get; }
@@ -59,6 +63,15 @@ namespace Acme.BookStore.Reports
                 if (book != null)
                 {
                     Logger.LogInformation("Executing MyReportJob AND Found book '{0}'", book.Name);
+                    await _localEventBus.PublishAsync(
+                        new ReportCompleteEvent
+                        {
+                            Id = book.Id,
+                            UserId = args.UserId ?? Guid.Empty,
+                            TenantId = args.TenantId,
+                            Message = $"Report for book '{book.Name}'"
+                        }
+                    );
                 }
             }
             else

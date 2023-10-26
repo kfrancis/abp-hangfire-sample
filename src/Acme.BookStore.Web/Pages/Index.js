@@ -1,6 +1,8 @@
 $(function () {
     var l = abp.localization.getResource('BookStore');
 
+
+
     var dataTable = $('#BooksTable').DataTable(
         abp.libs.datatables.normalizeConfiguration({
             serverSide: true,

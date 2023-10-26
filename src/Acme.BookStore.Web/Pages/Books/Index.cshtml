@@ -2,12 +2,15 @@
 @using Acme.BookStore.Localization
 @using Acme.BookStore.Web.Pages.Books
 @using Microsoft.Extensions.Localization
+@using Volo.Abp.AspNetCore.Mvc.UI.Packages.SignalR;
 @model IndexModel
 @inject IStringLocalizer<BookStoreResource> L
 @section scripts
-    {
+{
+    <abp-script type="typeof(SignalRBrowserScriptContributor)" />
     <abp-script src="/Pages/Books/Index.js" />
 }
+
 <abp-card>
     <abp-card-header>
         <h2>@L["Books"]</h2>
