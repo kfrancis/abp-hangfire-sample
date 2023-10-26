@@ -62,6 +62,8 @@ $(function () {
 
     var connection = new signalR.HubConnectionBuilder().withUrl("/my-messaging/background-jobs").build();
 
+    
+
     connection.on('backgroundJobMessage', function (eventData) { // Register for incoming messages
         var eventDataSplit = eventData.split(";");
         var userId = eventDataSplit[0];
@@ -89,6 +91,7 @@ $(function () {
 
     connection.start().then(function () {
         abp.log.debug('Connected to background events server!');
+        connection.invoke('RegisterConnectionId', abp.currentUser.id);
     }).catch(function (err) {
         return console.error(err.toString());
     });
