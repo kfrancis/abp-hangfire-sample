@@ -54,6 +54,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Acme.BookStore.Permissions;
 using Volo.Abp.AspNetCore.SignalR;
 using Acme.BookStore.Web.Hubs;
+using Hangfire;
+using Volo.Abp.BackgroundJobs.Hangfire;
 
 namespace Acme.BookStore.Web;
 
@@ -77,7 +79,8 @@ namespace Acme.BookStore.Web;
     typeof(AbpTenantManagementWebModule),
     typeof(AbpAspNetCoreSerilogModule),
     typeof(AbpAspNetCoreSignalRModule),
-    typeof(AbpSwashbuckleModule)
+    typeof(AbpSwashbuckleModule),
+    typeof(AbpBackgroundJobsHangfireModule)
     )]
 public class BookStoreWebModule : AbpModule
 {
@@ -114,6 +117,10 @@ public class BookStoreWebModule : AbpModule
         ConfigureAutoApiControllers();
         ConfigureSwaggerServices(context.Services);
         ConfigureSignalR();
+        context.Services.AddHangfire(config =>
+        {
+            config.UseSqlServerStorage(configuration.GetConnectionString("Default"));
+        });
     }
 
     private void ConfigureSignalR()
@@ -250,7 +257,7 @@ public class BookStoreWebModule : AbpModule
 
     private void ConfigureSwaggerServices(IServiceCollection services)
     {
-        
+
         services.AddAbpSwaggerGen(
             options =>
             {
@@ -320,6 +327,7 @@ public class BookStoreWebModule : AbpModule
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookStore API");
         });
         app.UseAbpSerilogEnrichers();
+        app.UseHangfireDashboard();
         app.UseConfiguredEndpoints();
     }
 }
